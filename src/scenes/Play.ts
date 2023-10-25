@@ -11,7 +11,7 @@ export default class Play extends Phaser.Scene {
   firing = false;
 
   starfield?: Phaser.GameObjects.TileSprite;
-  spinner?: Phaser.GameObjects.Shape;
+  player?: Phaser.GameObjects.Shape;
   enemy1?: Phaser.GameObjects.Shape;
 
   rotationSpeed = Phaser.Math.PI2 / 1000; // radians per millisecond
@@ -45,7 +45,7 @@ export default class Play extends Phaser.Scene {
       )
       .setOrigin(0, 0);
 
-    this.spinner = this.add.rectangle(320, 450, 50, 50, 0x00ce8a);
+    this.player = this.add.rectangle(320, 450, 50, 50, 0x00ce8a);
 
     this.enemy1 = this.add.rectangle(
       this.game.config.width as number,
@@ -57,6 +57,12 @@ export default class Play extends Phaser.Scene {
   }
 
   update() {
+    if (this.checkCollision(this.player!, this.enemy1!)) {
+      this.player?.setFillStyle(0xffff00);
+    } else {
+      this.player?.setFillStyle(0x00ce8a);
+    }
+
     this.starfield!.tilePositionX -= 4;
 
     this.enemy1!.x -= 0.6;
@@ -66,16 +72,16 @@ export default class Play extends Phaser.Scene {
     }
 
     if (this.left!.isDown && !this.firing) {
-      this.spinner!.x -= this.speed;
+      this.player!.x -= this.speed;
     }
     if (this.right!.isDown && !this.firing) {
-      this.spinner!.x += this.speed;
+      this.player!.x += this.speed;
     }
 
     if (this.fire!.isDown) {
       this.firing = true;
       this.tweens.add({
-        targets: this.spinner,
+        targets: this.player,
         scale: { from: 1.5, to: 1 },
         duration: 300,
         ease: Phaser.Math.Easing.Sine.Out,
@@ -83,16 +89,32 @@ export default class Play extends Phaser.Scene {
     }
 
     if (this.firing) {
-      this.spinner!.y -= 2;
+      this.player!.y -= 2;
       this.fireCheck();
     }
   }
 
   fireCheck() {
-    if (this.spinner!.y < -10) {
-      this.spinner!.y = 450;
-      this.spinner!.x = 320;
+    if (this.player!.y < -10) {
+      this.player!.y = 450;
+      this.player!.x = 320;
       this.firing = false;
+    }
+  }
+
+  checkCollision(
+    player: Phaser.GameObjects.Shape,
+    enemy: Phaser.GameObjects.Shape,
+  ) {
+    if (
+      player.x < enemy.x + enemy.width &&
+      player.x + player.width > enemy.x &&
+      player.y < enemy.y + enemy.height &&
+      player.height + player.y > enemy.y
+    ) {
+      return true;
+    } else {
+      return false;
     }
   }
 }
