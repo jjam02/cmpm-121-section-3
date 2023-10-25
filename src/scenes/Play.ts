@@ -6,6 +6,9 @@ export default class Play extends Phaser.Scene {
   fire?: Phaser.Input.Keyboard.Key;
   left?: Phaser.Input.Keyboard.Key;
   right?: Phaser.Input.Keyboard.Key;
+  speed = 0.5;
+
+  firing = false;
 
   starfield?: Phaser.GameObjects.TileSprite;
   spinner?: Phaser.GameObjects.Shape;
@@ -41,26 +44,40 @@ export default class Play extends Phaser.Scene {
       )
       .setOrigin(0, 0);
 
-    this.spinner = this.add.rectangle(100, 100, 50, 50, 0xff0000);
+    this.spinner = this.add.rectangle(320, 450, 50, 50, 0x00ce8a);
   }
 
-  update(_timeMs: number, delta: number) {
+  update() {
     this.starfield!.tilePositionX -= 4;
 
-    if (this.left!.isDown) {
-      this.spinner!.rotation -= delta * this.rotationSpeed;
+    if (this.left!.isDown && !this.firing) {
+      this.spinner!.x -= this.speed;
     }
-    if (this.right!.isDown) {
-      this.spinner!.rotation += delta * this.rotationSpeed;
+    if (this.right!.isDown && !this.firing) {
+      this.spinner!.x += this.speed;
     }
 
     if (this.fire!.isDown) {
+      this.firing = true;
       this.tweens.add({
         targets: this.spinner,
         scale: { from: 1.5, to: 1 },
         duration: 300,
         ease: Phaser.Math.Easing.Sine.Out,
       });
+    }
+
+    if (this.firing) {
+      this.spinner!.y -= 2;
+      this.fireCheck();
+    }
+  }
+
+  fireCheck() {
+    if (this.spinner!.y < -10) {
+      this.spinner!.y = 450;
+      this.spinner!.x = 320;
+      this.firing = false;
     }
   }
 }
